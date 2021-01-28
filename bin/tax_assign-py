@@ -1,0 +1,23 @@
+#-------------------------------------------------------------------------------------------------------
+# author: António Sousa
+# written: 19/12/2020
+# updated: 19/12/2020
+#
+# programs: 
+#
+# TODO: 
+#-------------------------------------------------------------------------------------------------------
+
+#!/usr/bin/env python3
+
+# import modules
+from tax_assign import *
+import argparse
+
+# Define arguments
+parser = argparse.ArgumentParser(description='Convert fastq to fasta!')
+parser.add_argument('-i', action="store", dest="input", type=str, help='fastq file')
+parser.add_argument('-o', action="store", dest="output", type=str, help='fasta file')
+args = parser.parse_args()
+
+fastq2fasta(args.input, args.output)

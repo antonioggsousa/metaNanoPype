@@ -1,0 +1,73 @@
+#-------------------------------------------------------------------------------------------------------
+# author: António Sousa
+# written: 19/12/2020
+# updated: 19/12/2020
+#
+# programs: 'filter_fastq.py' functions (that rely on 'porechop' (v.0.2.4) & 'NanoFilt' (v.2.7.1)
+#
+#-------------------------------------------------------------------------------------------------------
+
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import os
+import sys
+import re
+import datetime
+from tqdm import tqdm
+from filter_fastq import *
+
+# Define arguments
+parser = argparse.ArgumentParser(description='Primer/adpater clipping and trimming fastq files from Nanopore!')
+parser.add_argument('-i', action="store", dest="input", type=str, help='fastq file')
+parser.add_argument('-f', action="store", dest="folder", type=str, help='fastq folder')
+parser.add_argument('-t', action="store", dest="threads", type=str, \
+        help='no. of threads passed to Porechop [default -t 1]')
+parser.add_argument('-min_len', action="store", dest="min_len", type=str, help='minimum read length')
+parser.add_argument('-max_len', action="store", dest="max_len", type=str, help='maximum read length')
+parser.add_argument('-qs', action="store", dest="qs", type=str, help='minimum Q score')
+parser.add_argument('-min_gc', action="store", dest="min_gc", type=str, help='minimum GC content')
+parser.add_argument('-max_gc', action="store", dest="max_gc", type=str, help='maximum GC content')
+parser.add_argument('-trim_lead', action="store", dest="trim_lead", type=str, help='5 prime trimming (bp)')
+parser.add_argument('-trim_end', action="store", dest="trim_end", type=str, help='3 prime trimming (bp)')
+parser.add_argument('-o', action="store", dest="output", type=str, help='output folder name')
+args = parser.parse_args()
+args_dic = {"input": "-i", "folder": "-f", "nanopore": "-n", "threads": "-t", "output": "-o", 
+            "min_len": "-min_len", "max_len": "-max_len", "qs" : "-qs", "min_gc" : "-min_gc", 
+            "max_gc" : "-max_gc", "trim_lead" : "-trim_lead", "trim_end" : "-trim_end"}
+
+# Create out dir
+if args.output is not None:
+    if not os.path.exists(args.output):
+        os.makedirs(args.output)
+
+# Trim primers and adapters with Porechop & trim length + Q score + GC% with NanoFilt
+cmd_log("filter_fastq-py", "porechop", "--version", args, args_dic)
+cmd_log("filter_fastq-py", "NanoFilt", "--version", args, args_dic)
+threads = 1
+if args.threads is not None: 
+    threads = args.threads
+if args.input is not None: 
+    if args.output is not None:
+        filter_and_trim(args.input, args.output, threads, 
+                        args.min_len, args.max_len, args.qs, 
+                        args.min_gc, args.max_gc, args.trim_lead, args.trim_end)
+    else:
+        filter_and_trim(args.input, "./", threads, 
+                        args.min_len, args.max_len, args.qs, 
+                        args.min_gc, args.max_gc, args.trim_lead, args.trim_end)
+if args.folder is not None: 
+    fastq_files = get_list(args.folder, "*fastq*")
+    for fastq in tqdm(fastq_files): 
+        print("Processing file:", os.path.basename(fastq))
+        if args.output is not None:
+            filter_and_trim(fastq, args.output, threads, 
+                            args.min_len, args.max_len, args.qs, 
+                            args.min_gc, args.max_gc, args.trim_lead, 
+                            args.trim_end)
+        else:
+            filter_and_trim(fastq, "./", threads, 
+                            args.min_len, args.max_len, args.qs, 
+                            args.min_gc, args.max_gc, args.trim_lead, 
+                            args.trim_end)
