@@ -256,6 +256,94 @@ def get_blast_db(db_folder = None, ncbi_db = None, url = None,
 
 #-------------------------------------------------------------------------------------------------------
 
+def index_db_2_blast(db_path = None, db_index = None, 
+                     dbtype = "nucl", title = None, 
+                     parse_seqids = True, force = False):
+
+    # written: 28/03/2021
+    # updated: 28/03/2021
+
+    # TODO: check if indexed database already exists for 'dbtype = "prot"'.
+    # Currently, it only checks for nucleic databases.
+
+    '''
+    'index_db_2_blast()': index a local database to blast by using 
+    the 'makeblastdb' command-line utility from NCBI BLAST+ 
+    command-line suites (v.2.6.0).
+
+    ---
+
+    Parameters: 
+
+    'db_path' (mandatory): the path to the database fasta file name (str) 
+    to index by 'makeblastdb' command-line utility from NCBI BLAST+ 
+    command-line suites (v.2.6.0).
+
+    'db_index' (optional): the path (str) given will host the output of 
+    indexed files and the prefix the name of the index files. For instance 
+    for the path - "/path/out_db/prefix" - the output will be created under 
+    the directory '/path/out_db' and the database name/prefix will be 'prefix'.
+    If not given the prefix will be the name of the fasta file from the 
+    database and the directory fiven in 'db_path'.
+
+    'dbtype' (mandatory): one of 'prot' (for protein databases) or 'nucl' 
+    (for nucleic databases) (str). By default 'nucl'.
+
+    'title' (optional): by default 'None' (str).
+
+    'parse_seqids' (optional): parse sequence ids (logical). By default is 
+    'True'.
+
+    'force' (mandatory): by default 'False'. The directory that will host 
+    the indexed files is checked to verify if the files already exist. If
+    any of the indexed files expected to be created already exists, it exists.
+    To force it to overwrite the files, choose 'force = True'.
+    '''
+
+    # add index if 'db_index = None'
+    if db_index is None:
+        db_index = re.sub('.fasta$|.fa$|.fna$', "", db_path)
+    db_name = os.path.basename(db_index)
+    db_dir = os.path.dirname(db_index)
+
+    # check if files already exist in the indexed directory:
+    exts = [ db_name + '.nog', db_name + '.nsd', db_name + '.nsi', 
+             db_name + '.nhr', db_name + '.nin', db_name + '.nsq']
+    if force is False: 
+        for file in os.listdir(db_dir): 
+            if file in exts: 
+                sys.exit("File " + file + " already exists under the " + db_dir + " \n \
+           database directory provided!\n \
+           Use the option 'force' if you want to overwrite it!\n \
+           Aborting!")
+
+    # parse options
+    parse_update_opts = {'db_path': '-in', 
+                            'db_index': '-out', 
+                            'dbtype': '-dbtype', 
+                            'title': '-title', 
+                            'parse_seqids': '-parse_seqids'} # match/compatible with makeblastdb BLAST+
+    update_opts = [db_path, db_index, dbtype, title, parse_seqids] # options to be parsed   
+    update_opts_names = ['db_path', 'db_index', 'dbtype', 'title', 'parse_seqids']
+    opts_2_add = ["makeblastdb"]
+    for opt in range(len(parse_update_opts)): # update and parse options to pass to 'update_blastdb'
+        if (type(update_opts[opt]) == str): 
+            param_name = parse_update_opts[update_opts_names[opt]]
+            param_opt = update_opts[opt]
+            opts_2_add.append(param_name)
+            opts_2_add.append(param_opt)
+        if update_opts[opt] is True: 
+            param_name = parse_update_opts[update_opts_names[opt]]
+            opts_2_add.append(param_name)
+        
+    # check tool and run it with subprocess
+    check_tool("makeblastdb") # check if tool is in your PATH
+    print("Indexing database " + db_name + " at " + db_dir + " ...")
+    subprocess.run(opts_2_add)
+    print("Database " + db_name + " indexed at " + db_dir)
+
+#-------------------------------------------------------------------------------------------------------
+
 import subprocess
 
 def blast_remote_fasta(fasta, blast_out, blast_fmt = 6, blast_tool = "blastn", 
