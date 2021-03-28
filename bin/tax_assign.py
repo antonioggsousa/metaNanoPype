@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------------------------------
 # author: António Sousa
 # written: 26/12/2020
-# updated: 03/12/2020
+# updated: 28/03/2021
 #
 # programs: NCBI BLAST+ command-line suites (v.2.6.0) and python3 packages (re, os, sys, tqdm, pandas, 
 # biopython, subprocess)
@@ -13,8 +13,6 @@
 # - 'blast_remote_fasta()' substitute the option '-max_target_seqs' which can produce erroneous 
 # results (check scientific literature).
 # - 'fastq2fasta()' include the possibility to provide gzip fastq files. 
-# - 'get_blast_db()': Add the possibility to add external or local fasta databases. Complete 
-# documentation. Add/complete also the option 'check_md5'
 # 
 #-------------------------------------------------------------------------------------------------------
 
@@ -73,29 +71,84 @@ def fastq2fasta(fastq, fasta):
 #-------------------------------------------------------------------------------------------------------
 
 import os
+import re
 import sys
+import wget # download files
 import subprocess
+#requires: 'md5sum' GNU/Linux utility
+#requires: 'update_blastdb' from NCBI BLAST+ command-line suites (v.2.6.0)
 
 def get_blast_db(db_folder = None, ncbi_db = None, url = None, 
-                 show_ncbi_blast_db = False, check_md5 = True, 
-                 passive = False, force = False, quiet = False): 
+                 show_ncbi_blast_db = False, check_ncbi_md5 = True, 
+                 passive = False, force = False, quiet = False, 
+                 decompress = False, check_md5 = None): 
 
-    # TODO: Add the possibility to add external or local fasta 
-    # databases. Complete documentation. Add/complete also the 
-    # option 'check_md5'
+    # written: 26/12/2020
+    # updated: 28/03/2021
 
     '''
     'get_blast_db()': it allows to download data from the NCBI BLAST
     databases repository - https://ftp.ncbi.nlm.nih.gov/blast/db/ -
-    with 'update_blastdb.pl' perl script from NCBI BLAST+ utilities.
+    with 'update_blastdb.pl' perl script from NCBI BLAST+ utilities 
+    or any other online database by providing a ftp/https url. It 
+    allows to check for the md5 hash sum to assess if the database 
+    was properly downloaded and decompression of the same database 
+    (if in the format of: '.tar.gz', '.gz', '.zip'). 
 
     ---
 
     Parameters:
 
-    '':
+    'db_folder' (optional): database folder name/path (str) to where the 
+    database will be downloaded. If 'None' (default) it will be downloaded 
+    to the current working directory. 
+
+    'ncbi_db' (optional): by default 'None'. Given a name of a NCBI database 
+    (str) among the options provided (run 'get_blast_db(show_ncbi_blast_db = True)'
+    to see the possible options), it will download the database in the 'db_folder'
+    provided with the 'update_blastdb' command-line tool from NCBI BLAST+ 
+    command-line suites (v.2.6.0).
+
+    'url' (optional): download an online database, other than NCBI, by 
+    providing the url (ftp/https hyperlink) (str) to the 'db_folder' folder
+    provided. By default is 'None'. 
+
+    'show_ncbi_blast_db' (optional): logical, by default is 'False'. Print 
+    the NCBI databases names that are available to download and exit. 
+
+    'check_ncbi_md5' (optional): logical, by deafult is 'True'. Only applied 
+    if a NCBI database is downloaded. It uses the md5 hash sum file downloaded
+    with the NCBI database to check if the hashes match or not. Based on the 
+    'md5sum' GNU/Linux utility. 
+
+    'passive' (optional): by default is 'False'. If 'passive' should be passed to the  
+    'update_blastdb' command-line tool from NCBI BLAST+ command-line suites (v.2.6.0).
+
+    'force' (optional): by default is 'False'. If 'force' should be passed to the
+    'update_blastdb' command-line tool from NCBI BLAST+ command-line suites (v.2.6.0).
+    
+    'quiet' (optional): by default is 'False'. If 'quiet' should be passed to the
+    'update_blastdb' command-line tool from NCBI BLAST+ command-line suites (v.2.6.0).
+
+    'decompress' (optional): by default is 'False'. If 'True' it will decompress the 
+    database downloaded by checking its extension. Formats supported are: '.tar.gz', 
+    '.gz', '.zip'.  
+    
+    'check_md5' (optional): by deafult is 'None'. Only applied to a custom database, 
+    or database other than NCBI. If 'True' (logical) it will attempt to download a 
+    file with the md5 hash sum that is available in many repositories with the 
+    same link as the database but with the extension ".md5". If a string is provided 
+    instead, it will compare this string with the md5 hash sum of the database 
+    downloaded. In both cases the database md5 hash sum is checked with the 
+    'md5sum' GNU/Linux utility. 
 
     '''
+    
+    # check conditions
+    # only one can be different from 'None': 'ncbi_db = None'; 'url = None'
+    if (ncbi_db is not None) and (url is not None): 
+        sys.exit("You can not download a NCBI database simultaneously with a custom database.\n \
+           Only one database can be downloaded at a time.")
 
     # current wd
     wd = os.getcwd()
@@ -131,31 +184,72 @@ def get_blast_db(db_folder = None, ncbi_db = None, url = None,
             os.chdir(db_folder)
 
         # download from NCBI repo: 
-        if ncbi_db is not None:  
-            if ncbi_db in ncbi_blast_dbs: 
-                check_tool("update_blastdb") # check if tool is in your PATH
-                opts_2_add = ["update_blastdb", ncbi_db]
-                for opt in range(len(update_blastdb_opts)): # update and parse options to pass to 'update_blastdb'
-                    if update_blastdb_opts[opt]: 
-                        #print(update_blastdb_names[i])
-                        opts_2_add.append(parse_update_blastdb[update_blastdb_names[opt]])
-                subprocess.run(opts_2_add) # run 'update_blastdb'
+        if ncbi_db in ncbi_blast_dbs: 
+            check_tool("update_blastdb") # check if tool is in your PATH
+            opts_2_add = ["update_blastdb", ncbi_db]
+            for opt in range(len(update_blastdb_opts)): # update and parse options to pass to 'update_blastdb'
+                if update_blastdb_opts[opt]: 
+                    #print(update_blastdb_names[i])
+                    opts_2_add.append(parse_update_blastdb[update_blastdb_names[opt]])
+            print("Downloading " + ncbi_db + " ...")
+            subprocess.run(opts_2_add) # run 'update_blastdb'
+            print(ncbi_db + " database downloaded!")
 
-                # check md5sum: integrity
-                if check_md5:
-                    continue
-                    # md5file = [i for i in test if re.search("^"+ncbi_db+"(.*?)\.md5$", i)]
-                    # md5file = md5file[0]
-                    # read_hash_from_file = open(md5file, 'r')
-                    # md5good = [line.split(' ')[0] for line in read_hash_from_file]  
-                    # md5good = md5good[0]
-                    # print("Hash md5sum from the " + ncbi_db + " database is: " + md5good)                
-                    # read_hash_from_file.close()
+            # check md5sum: integrity
+            if check_ncbi_md5:
+                md5file = [i for i in os.listdir() if re.search("^"+ncbi_db+"(.*?)\.md5$", i)] # get hash md5 sum
+                md5file = md5file[0]
+                read_hash_from_file = open(md5file, 'r')
+                md5good = [line.split(' ')[0] for line in read_hash_from_file]  
+                md5good = md5good[0] # get hash md5sum 
+                ncbi_db_file = re.sub(".md5", "", md5file) # get db file name compressed
+                md5db = subprocess.check_output(["md5sum", ncbi_db_file]) # get db file name compressed
+                md5db = md5db.decode('UTF-8').split(" ")[0] # convert bytes to unicode strings
+                read_hash_from_file.close()
+                database_name = ncbi_db_file
+                if md5good == md5db: 
+                    print("The database " + database_name + " was properly downloaded!")     
+                else: # if the download fails, it will fail above (this message will never be printed - remove it)
+                    sys.exit("The database " + database_name + " is corrupted!\n\
+                        Please check your internet connection and download it again!") 
+        else: 
+            sys.exit("'ncbi_db' is not among the valid options of NCBI databases.\n \
+            Please provide a valid database to download. Check valid\n \
+            databases (run): get_blast_db(show_ncbi_blast_db = True)")
+        
+        # download other database that is not from NCBI
+        if url is not None: 
+            database_name = os.path.basename(url)
+            print("Downloading " + database_name + " ...")
+            wget.download(url) # download db
+            print(database_name + " database downloaded!")
+            if check_md5 is not None: # logical or string
+                if check_md5: # if logical attempt to download the md5 hash sum with the database 
+                    # by adding to the db file name the extension '.md5' - if the text file exists in the db repo
+                    # it'll be downloaded and the first column & row imported as a hash string 
+                    wget.download(url + ".md5") # attempt to download db md5 hash file (it it exists in the repo)
+                    md5file = [i for i in os.listdir() if re.search("^"+database_name+"(.*?)\.md5$", i)] # get hash md5 sum
+                    md5file = md5file[0]
+                    read_hash_from_file = open(md5file, 'r')
+                    md5good = [line.split(' ')[0] for line in read_hash_from_file]  
+                    md5good = md5good[0] # get hash md5sum 
+                    read_hash_from_file.close()
+                else: # if the md5 hash string itself is provided
+                    md5good = check_md5
+                md5db = subprocess.check_output(["md5sum", database_name]) # md5sum hash str: get db file name compressed
+                md5db = md5db.decode('UTF-8').split(" ")[0] # convert bytes to unicode strings
+                if md5good == md5db: # check if hashes match
+                    print("The database " + database_name + " was properly downloaded!")     
+                else: # if the download fails, it will fail above (this message will never be printed - remove it)
+                    sys.exit("The database " + database_name + " is corrupted!\n\
+                        Please check your internet connection and download it again!") 
 
-            else: 
-                sys.exit("'ncbi_db' is not among the valid options of NCBI databases.\n \
-                Please provide a valid database to download. Check valid\n \
-                databases (run): get_blast_db(show_ncbi_blast_db = True)")
+        # decompress database 
+        if decompress: 
+            print("Decompressing " + database_name + " database!")
+            decompress_file(file_name = database_name)
+            print(database_name + " database decompressed!")
+
     finally:
         # get back to the starting point dir
         os.chdir(wd)
@@ -460,6 +554,72 @@ def blast_fasta(fasta, blast_tool = 'blastn'):
             print(hsp.query[0:75] + "...")
             print(hsp.match[0:75] + "...")
             print(hsp.sbjct[0:75] + "...") """
+
+#-------------------------------------------------------------------------------------------------------
+
+import re
+import os 
+import sys
+import gzip # for '.gz'
+import tarfile # for '.tar.gz'
+from zipfile import ZipFile # for '.zip' 
+
+def decompress_file(file_name):
+
+    '''
+    'decompress_file()': decompress a given file 
+    by identifying its file extension. Compression 
+    formats supported are: '.zip', '.gz', '.tar.gz'.
+    The decompressed file will have the same name 
+    as the file name of the compressed file provided.
+
+    Parameters
+
+    ---
+
+    'file_name' (mandatory): given a file name/path (str) 
+    to decompress depending on the file extension format 
+    supported. 
+    '''
+
+    # check file extension
+    extensions = [".tar.gz", ".gz", ".zip"]
+    file_extension = [ ext for ext in extensions if ext in file_name ]
+    if len(file_extension) == 0: 
+        sys.exit("The file to decompress ('" + file_name + "') is not supported!\n \
+            The formats supported are: '.tar.gz', '.gz', '.zip'.\n \
+            Please provide a compressed file supported!")
+    file_extension = file_extension[0]
+
+    # check if output file name exists in current wd; if so, abort!
+    file_name_out = re.sub(file_extension + "$", "", file_name)
+    for file_dir in os.listdir():
+        if file_dir == file_name_out: 
+            sys.exit("The file " + file_name_out + " exists in the current directory!\n\
+            Decompressing the " + file_name + " would overwrite it.\n\
+            Remove the file " + file_name_out + " from the current directory\n\
+            or rename it. Aborting!")
+
+    ## files
+    # .zip
+    if file_extension == ".zip": 
+        with ZipFile(file_name, 'r') as zip:
+            zip.extractall()
+
+    # .gz
+    if file_extension == ".gz":
+        ungz_file_name = re.sub(".gz$", "", file_name)
+        ungz_file = open(ungz_file_name, "w")
+        with gzip.open(file_name, 'rb') as gz: # read compressed '.gz' file
+            line = gz.read() # convert gz to bytes
+            ungz_file.write(line.decode('UTF-8')) # write bytes converted into strings
+        ungz_file.close()
+
+    # .tar.gz
+    if file_extension == ".tar.gz": 
+        tar = tarfile.open(file_name, "r:gz")
+        tar.extractall()
+        tar.close()    
 
 #-------------------------------------------------------------------------------------------------------
 
