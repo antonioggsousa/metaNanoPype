@@ -117,3 +117,5 @@ This project is being developed under the scope of the [Open Life Science 3](htt
 **Project lead**: [António Sousa](https://openlifesci.org/ols-3/projects-participants/#antonioggsousa)
 
 **Mentor**: [Hans-Rudolf Hotz](https://openlifesci.org/ols-3#hrhotz)
+
+**Advice & support**: [Ricardo Ramiro](https://scholar.google.com/citations?user=bZkDsqEAAAAJ&hl=en)
