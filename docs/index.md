@@ -53,7 +53,7 @@ In general, it requires:
 
 <br>
 
-Then, for each individual step it requires several third-party, stand-alone tools installed in your system: 
+Then, for each module step it requires several third-party, stand-alone tools installed in your system: 
 
    + (I) demultiplexing (*not implemented yet*); 
 
