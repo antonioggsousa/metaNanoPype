@@ -33,7 +33,7 @@
    
    + (VI) diversity analyses (alpha- and beta-diversity) (*not implemented yet*). 
    
-Depending on the step, the module can include more than one option, i.e., tool/algorithm, to allow flexibility to the user. During each step is generated a log file with relevant information to build a report (an additional option) in html format describing the results, versions of software used as well scripts and references of the software. Additionally, the metaNanoPype could be implemented in a workflow manager (snakemake or netflow) in order to become scalable.  
+Depending on the step, the module can include more than one option, i.e., tool/algorithm, to allow flexibility to the user. During each step is generated a log file with relevant information to build a report (an additional option) in html format describing the results, versions of software used as well scripts and references of the software.
 
 <br>
 
