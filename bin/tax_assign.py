@@ -70,6 +70,151 @@ def fastq2fasta(fastq, fasta):
 
 #-------------------------------------------------------------------------------------------------------
 
+## Import packages
+#import os
+#import sys
+#import subprocess
+
+def build_kraken2_db(db_dir, db_name, threads = 1):
+
+    # written: 25/04/2021
+    # updated: 25/04/2021
+
+    '''
+    'build_kraken2_db()': download and build a special
+    kraken2 database of 16S reference sequences. One 
+    of 'silva', 'greengenes', 'rdp'.
+
+    ---
+
+    Parameters:
+
+    'db_dir' (mandatory): database directory name to 
+    save/write the database. 
+
+    'db_name' (mandatory): database name to download 
+    and build/index. One of 'silva', 'greengenes', 'rdp'.
+
+    'threads' (mandatory): number of threads to use. 
+    By default is 1 core.  
+    '''
+
+    ## Check input
+    db_available: ["silva", "greengenes", "rdp"]
+    if db_name not in db_available: 
+        sys.exit("The " + db_name + " 'db_name' provided is not among the databases available!\n\
+                 Please provide as db_name 'silva', 'greengenes' or 'rdp'.\n\
+                 Aborting...")
+
+    ## Check if database files already exist; if they exist, abort
+    if os.path.exists(db_dir):
+        db_dir_files = os.listdir(db_dir) # list the files of the db dir
+        db_files = ["hash.k2d", "opts.k2d", "taxo.k2d"] # database files necessary to run kraken2 
+        check_db_files = all(f in db_dir_files for f in db_files) # return 'True' if all databases already exist
+        if check_db_files: 
+            sys.exit("All the three database files required were found in 'db_dir':\n\
+                    'hash.k2d', 'opts.k2d', 'taxo.k2d'!\n\
+                    Please provide a different 'db_dir' if you want to download\n\
+                    and build again the database!")  
+
+    ## Download database 
+    check_tool("kraken2-build") # check if tool is in your PATH
+    subprocess.run(["kraken2-build", "--standard", "--db", db_dir, "--special", db_name, 
+                    "--threads", str(threads)])
+
+#-------------------------------------------------------------------------------------------------------
+
+## Import packages
+#
+
+def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = False, threads = 1):
+
+    # written: 25/04/2021
+    # updated: 25/04/2021
+
+    '''
+    'map_reads_with_kraken2()': map fastq/fasta nanopore reads
+    against a reference database provided with kraken2.
+
+    ---
+
+    Parameters:
+
+    'fastq' (mandatory): fastq/fasta file directories (str).
+    A string separated by comma for the different file 
+    directories. For example: 
+    'sample_A.fastq.gz,sample_B.fastq.gz,sample_C.fastq.gz'.  
+
+    'db_dir' (mandatory): database directory name where the  
+    database indexed kraken2 files are saved. 
+
+    'out_dir' (optional): output directory name. If not given 
+    it will use the default that is current working directory.
+
+    'samples' (mandatory): name of the samples to give as 
+    kraken2 output. It will be added the suffix '.out'.  
+
+    'report' (mandatory): if 'True' report is created with the 
+    name provided in 'samples' and the suffix '.report'. 
+    By default is 'False' - it is not created.
+
+    'threads' (mandatory): number of threads to use. 
+    By default is 1 core.      
+    '''
+
+    ## Check fastq
+    fastq = str.split(fastq, ",")
+    check_fastq_exists = all(os.path.isfile(fast) for fast in fastq)
+    if not check_fastq_exists: 
+        sys.exit("The 'fastq' files provided were not found!\n\
+                 Please check if all the paths to the input fastq/fasta\n\
+                 files provided exist or if you provide them in the right format:\n\
+                 e.g., 'sample_A.fastq.gz,sample_B.fastq.gz,sample_C.fastq.gz'.\n\
+                 Aborting...")
+    samples = str.split(samples, ",")
+    if len(fastq) != len(samples): 
+        sys.exit("The number of fastq/fasta files provided in 'fastq'\n\
+                 is different from 'samples'.\n\
+                 Please provide a comma-separated list of 'fastq' and\n\
+                 respective 'samples' of the same length")
+
+    ## Check 'out_dir'
+    if not os.path.exists(out_dir): # if folder not exists, create it
+        os.mkdir(out_dir) 
+    if not out_dir.endswith("/"): # check if path ends with '/', otherwise add it
+        out_dir = out_dir + "/"
+    samples_dir = [ out_dir + samp + ".out" for samp in samples ] # add extension '.out' to 'samples'
+
+    ## Add report 
+    if report: 
+        report_name = [ out_dir + samp + ".report" for samp in samples ]
+
+    ## Map reads with kraken2: 
+    no_fastq = len(fastq)
+    for f in range(no_fastq): 
+        check_tool("kraken2") # check if tool is in your PATH
+        if report: 
+            print("Mapping sample " + samples[f] + " corresponding to the fastq/fasta " + fastq[f] + "...")
+            subprocess.run(["kraken2", "--db", "db_dir", fastq[f], 
+                            "--threads", str(threads), "--output", samples_dir[f], 
+                            "--report", report_name[f]])
+            print("Sample " + samples[f] + " mapped and output created at: " + samples_dir[f] + "...")
+            print("Report for sample " + samples[f] + " was saved at: " + report_name[f] + "...")
+            print("")
+            print("..........................................................................................")
+            print("")
+        else: 
+            print("Mapping sample " + samples[f] + " corresponding to the fastq/fasta " + fastq[f] + "...")
+
+            subprocess.run(["kraken2", "--db", "db_dir", fastq[f], 
+                            "--threads", str(threads), "--output", samples_dir[f]])     
+            print("Sample " + samples[f] + " mapped and output created at: " + samples_dir[f] + "...")       
+            print("")
+            print("..........................................................................................")
+            print("")
+
+#-------------------------------------------------------------------------------------------------------
+
 import os
 import re
 import sys
