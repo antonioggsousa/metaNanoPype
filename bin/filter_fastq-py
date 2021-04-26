@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #-------------------------------------------------------------------------------------------------------
 # author: António Sousa
 # written: 19/12/2020
@@ -6,8 +8,6 @@
 # programs: 'filter_fastq.py' functions (that rely on 'porechop' (v.0.2.4) & 'NanoFilt' (v.2.7.1)
 #
 #-------------------------------------------------------------------------------------------------------
-
-#!/usr/bin/env python3
 
 import argparse
 import subprocess

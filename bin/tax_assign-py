@@ -16,42 +16,33 @@ import argparse
 
 # Define arguments
 parser = argparse.ArgumentParser(description='Map nanopore reads against a reference database!')
-parser.add_argument('-i', action="store", dest="input", type=str, help='fasta/fastq file')
-parser.add_argument('-t', action="store", dest="threads", type=str, \
-        help='no. of threads passed to Porechop [default -t 1]')
-parser.add_argument('-db', action="store", dest="database", type=str, help='database name directory')
-parser.add_argument('-db_down', action="store", dest="database_download", type=str, help='database name to download. One of: silva, greengenes, rdp.\n
-                                                                                          It ignores if the direcotry given in -db already exists.')
-parser.add_argument('-o', action="store", dest="output", type=str, help='output file name')
+parser.add_argument('-i', action="store", dest="input", type=str, \
+    help='fasta/fastq(.gz) comma-separated file directories')
+parser.add_argument('-t', action="store", dest="threads", type=int, \
+    help='no. of threads [default -t 1]')
+parser.add_argument('-db', action="store", dest="database", type=str, \
+    help='database name directory')
+parser.add_argument('-db_down', action="store", dest="database_download", type=str, \
+    help="database name to download. One of: silva, greengenes, rdp.\n\
+        It ignores if the directory given in '-db' already exists.")
+parser.add_argument('-s', action="store", dest="samples", type=str, \
+    help="samples name separated by comma in the same order given in '-i'")
+parser.add_argument('-r', action='store_true', dest="report", default=False, \
+    help="build kraken2 report")
+parser.add_argument('-o', action="store", dest="output", type=str, default = "./", \
+    help='output directory name')
 args = parser.parse_args()
+args_dic = {"input": "-i", "threads": "-t", "database": "-db", "database_download": "-db_down",  
+            "samples": "-s", "report": "-r", "output": "-o"}
 
+# Database build with kraken
 
+if args.db_down is not None: 
+    cmd_log("tax_assign-py", "kraken2-build", "--version", args, args_dic)
+    print("Downloading")
+    build_kraken2_db(db_dir = args.database, db_name = args.database_download, threads = args.threads)
 
-
-## Construct the database 
-
-kraken2-build --standard --db ../bin/kraken2/db/silva/silva
-../bin/kraken2/bin/kraken2-build --db ../bin/kraken2/db/silva --special silva
-
-
-## Map reads
-db_name=../bin/kraken2/db/silva
-threads=10
-samples=../data/fastq/*.fastq.gz
-results=../results
-for samp in $samples;
-do
-    sample=$(basename $samp | sed 's/.fastq.gz//g');
-    ../bin/kraken2/bin/kraken2 --db $db_name $samp --threads $threads --output ${results}/${sample}.out --report ${results}/${sample}.report $samp
-done;
-      
-
-
-#args_dic = {"input": "-i", "folder": "-f", "nanopore": "-n", "threads": "-t", "output": "-o", 
-#            "min_len": "-min_len", "max_len": "-max_len", "qs" : "-qs", "min_gc" : "-min_gc", 
-#            "max_gc" : "-max_gc", "trim_lead" : "-trim_lead", "trim_end" : "-trim_end"}
-#parser.add_argument('-qs', action="store", dest="qs", type=str, help='minimum Q score')
-#parser.add_argument('-min_gc', action="store", dest="min_gc", type=str, help='minimum GC content')
-#parser.add_argument('-max_gc', action="store", dest="max_gc", type=str, help='maximum GC content')
-#parser.add_argument('-trim_lead', action="store", dest="trim_lead", type=str, help='5 prime trimming (bp)')
-#parser.add_argument('-trim_end', action="store", dest="trim_end", type=str, help='3 prime trimming (bp)')
+# Map reads with kraken2
+cmd_log("tax_assign-py", "kraken2", "--version", args, args_dic)
+map_reads_with_kraken2(fastq = args.input, db_dir = args.database, out_dir = args.output, \
+    samples = args.samples, report = args.report, threads = args.threads)

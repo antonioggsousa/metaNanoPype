@@ -18,7 +18,10 @@
 
 # import modules
 import re
-from tqdm import tqdm
+import os
+import sys
+import subprocess
+#from tqdm import tqdm
 
 def fastq2fasta(fastq, fasta):
 
@@ -70,11 +73,6 @@ def fastq2fasta(fastq, fasta):
 
 #-------------------------------------------------------------------------------------------------------
 
-## Import packages
-#import os
-#import sys
-#import subprocess
-
 def build_kraken2_db(db_dir, db_name, threads = 1):
 
     # written: 25/04/2021
@@ -119,15 +117,17 @@ def build_kraken2_db(db_dir, db_name, threads = 1):
 
     ## Download database 
     check_tool("kraken2-build") # check if tool is in your PATH
+    print("Downloading " + db_name + " ...")
     subprocess.run(["kraken2-build", "--standard", "--db", db_dir, "--special", db_name, 
                     "--threads", str(threads)])
+    print(db_name + " downloaded at: " + db_dir)
 
 #-------------------------------------------------------------------------------------------------------
 
 ## Import packages
 #
 
-def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = False, threads = 1):
+def map_reads_with_kraken2(fastq, db_dir, samples, report = False, threads = 1, out_dir = "./"):
 
     # written: 25/04/2021
     # updated: 25/04/2021
@@ -148,9 +148,6 @@ def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = Fals
     'db_dir' (mandatory): database directory name where the  
     database indexed kraken2 files are saved. 
 
-    'out_dir' (optional): output directory name. If not given 
-    it will use the default that is current working directory.
-
     'samples' (mandatory): name of the samples to give as 
     kraken2 output. It will be added the suffix '.out'.  
 
@@ -159,7 +156,10 @@ def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = Fals
     By default is 'False' - it is not created.
 
     'threads' (mandatory): number of threads to use. 
-    By default is 1 core.      
+    By default is 1 core.  
+
+    'out_dir' (optional): output directory name. If not given 
+    it will use the default that is current working directory.
     '''
 
     ## Check fastq
@@ -195,7 +195,7 @@ def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = Fals
         check_tool("kraken2") # check if tool is in your PATH
         if report: 
             print("Mapping sample " + samples[f] + " corresponding to the fastq/fasta " + fastq[f] + "...")
-            subprocess.run(["kraken2", "--db", "db_dir", fastq[f], 
+            subprocess.run(["kraken2", "--db", db_dir, fastq[f], 
                             "--threads", str(threads), "--output", samples_dir[f], 
                             "--report", report_name[f]])
             print("Sample " + samples[f] + " mapped and output created at: " + samples_dir[f] + "...")
@@ -206,7 +206,7 @@ def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = Fals
         else: 
             print("Mapping sample " + samples[f] + " corresponding to the fastq/fasta " + fastq[f] + "...")
 
-            subprocess.run(["kraken2", "--db", "db_dir", fastq[f], 
+            subprocess.run(["kraken2", "--db", db_dir, fastq[f], 
                             "--threads", str(threads), "--output", samples_dir[f]])     
             print("Sample " + samples[f] + " mapped and output created at: " + samples_dir[f] + "...")       
             print("")
@@ -215,11 +215,11 @@ def map_reads_with_kraken2(fastq, db_dir, out_dir = "./", samples, report = Fals
 
 #-------------------------------------------------------------------------------------------------------
 
-import os
-import re
-import sys
-import wget # download files
-import subprocess
+#import os
+#import re
+#import sys
+#import wget # download files
+#import subprocess
 #requires: 'md5sum' GNU/Linux utility
 #requires: 'update_blastdb' from NCBI BLAST+ command-line suites (v.2.6.0)
 
@@ -489,7 +489,7 @@ def index_db_2_blast(db_path = None, db_index = None,
 
 #-------------------------------------------------------------------------------------------------------
 
-import subprocess
+#import subprocess
 
 def blast_remote_fasta(fasta, blast_out, blast_fmt = 6, blast_tool = "blastn", 
                        db_name = "nt", db_type = "remote", hits_per_seq = 1, 
@@ -549,7 +549,7 @@ def blast_remote_fasta(fasta, blast_out, blast_fmt = 6, blast_tool = "blastn",
 
 #-------------------------------------------------------------------------------------------------------
 
-import pandas as pd
+#import pandas as pd
 
 def parsing_blast_outfmt_six(blast_out, parsed_blast_out):
 
@@ -587,11 +587,11 @@ def parsing_blast_outfmt_six(blast_out, parsed_blast_out):
 
 #-------------------------------------------------------------------------------------------------------
 
-import os
-import sys
-import pandas as pd
-from tqdm import tqdm
-from Bio import Entrez
+#import os
+#import sys
+#import pandas as pd
+#from tqdm import tqdm
+#from Bio import Entrez
 
 def get_taxonomy_from_NCBI(acc_ids_name, file_name = None,
                            col_ids = None, header = None, sep = '\t'):
@@ -689,9 +689,9 @@ def get_taxonomy_from_NCBI(acc_ids_name, file_name = None,
 
 #-------------------------------------------------------------------------------------------------------
 
-import os
-import sys
-import pandas as pd
+#import os
+#import sys
+#import pandas as pd
 
 def tax_summary(taxonomy_tbl, file_name = None, sep = '; '):
     
@@ -790,12 +790,12 @@ def blast_fasta(fasta, blast_tool = 'blastn'):
 
 #-------------------------------------------------------------------------------------------------------
 
-import re
-import os 
-import sys
-import gzip # for '.gz'
-import tarfile # for '.tar.gz'
-from zipfile import ZipFile # for '.zip' 
+#import re
+#import os 
+#import sys
+#import gzip # for '.gz'
+#import tarfile # for '.tar.gz'
+#from zipfile import ZipFile # for '.zip' 
 
 def decompress_file(file_name):
 
