@@ -5,7 +5,7 @@
 # written: 25/04/2021
 # updated: 25/04/2021
 #
-# programs: 
+# programs: kraken2 (version 2.1.1)
 #
 # TODO: 
 #-------------------------------------------------------------------------------------------------------
@@ -36,7 +36,6 @@ args_dic = {"input": "-i", "threads": "-t", "database": "-db", "database_downloa
             "samples": "-s", "report": "-r", "output": "-o"}
 
 # Database build with kraken
-
 if args.db_down is not None: 
     cmd_log("tax_assign-py", "kraken2-build", "--version", args, args_dic)
     print("Downloading")
