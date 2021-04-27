@@ -13,12 +13,17 @@
 # import modules
 from tax_assign import *
 import argparse
+import subprocess
+import os
+import sys
+import re
+import datetime
 
 # Define arguments
 parser = argparse.ArgumentParser(description='Map nanopore reads against a reference database!')
 parser.add_argument('-i', action="store", dest="input", type=str, \
     help='fasta/fastq(.gz) comma-separated file directories')
-parser.add_argument('-t', action="store", dest="threads", type=int, \
+parser.add_argument('-t', action="store", dest="threads", type=str, \
     help='no. of threads [default -t 1]')
 parser.add_argument('-db', action="store", dest="database", type=str, \
     help='database name directory')
@@ -36,7 +41,7 @@ args_dic = {"input": "-i", "threads": "-t", "database": "-db", "database_downloa
             "samples": "-s", "report": "-r", "output": "-o"}
 
 # Database build with kraken
-if args.db_down is not None: 
+if args.database_download is not None: 
     cmd_log("tax_assign-py", "kraken2-build", "--version", args, args_dic)
     print("Downloading")
     build_kraken2_db(db_dir = args.database, db_name = args.database_download, threads = args.threads)

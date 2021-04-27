@@ -21,6 +21,7 @@ import re
 import os
 import sys
 import subprocess
+import datetime
 #from tqdm import tqdm
 
 def fastq2fasta(fastq, fasta):
@@ -881,14 +882,16 @@ def cmd_log(script_file, program, pattern_version, args, parse_args_dic):
         sys.exit("Install or export " + program + " to your PATH! Exiting...")
     else: 
         log_file = open(script_file + ".log", "a")
-        if os.stat(script_file + ".log").st_size == 0: # if file is empty      
-            log_file.write(script_file + " run: " + str(datetime.datetime.now()) + "\n")
-            cmd_line = "./" + script_file
-            for arg in vars(args):
-                if getattr(args, arg) is not None:
-                    cmd_line = cmd_line + " " + parse_args_dic[arg] + " " + getattr(args, arg)
-            log_file.write(script_file + " command-line: " + cmd_line)
-            log_file.write("\n\n---\n\n")
+        #if os.stat(script_file + ".log").st_size == 0: # if file is empty      
+        log_file.write(script_file + " run: " + str(datetime.datetime.now()) + "\n")
+        cmd_line = "./" + script_file
+        for arg in vars(args):
+            if getattr(args, arg) is not None and type(getattr(args, arg)) is not bool: 
+                cmd_line = cmd_line + " " + str(parse_args_dic[arg]) + " " + str(getattr(args, arg))
+            if getattr(args, arg) is True: 
+                cmd_line = cmd_line + " " + str(parse_args_dic[arg])
+        log_file.write(script_file + " command-line: " + cmd_line)
+        log_file.write("\n\n---\n\n")
         log_file.write(program_version.stdout.decode())
         log_file.write(program + " installed: " + program_install.stdout.decode() )
         log_file.write("\n---\n\n")
