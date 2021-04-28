@@ -42,8 +42,7 @@ args_dic = {"input": "-i", "threads": "-t", "database": "-db", "database_downloa
 
 # Database build with kraken
 if args.database_download is not None: 
-    cmd_log("tax_assign-py", "kraken2-build", "--version", args, args_dic)
-    print("Downloading")
+    #cmd_log("tax_assign-py", "kraken2-build", "--version", args, args_dic)
     build_kraken2_db(db_dir = args.database, db_name = args.database_download, threads = args.threads)
 
 # Map reads with kraken2

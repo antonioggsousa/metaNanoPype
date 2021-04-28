@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #-------------------------------------------------------------------------------------------------------
 # author: António Sousa
 # written: 19/12/2020
@@ -9,8 +11,6 @@
 #    + add 'thread' option to 'fastqc' 
 #    + add better argument to the '-n' option than 'True'
 #-------------------------------------------------------------------------------------------------------
-
-#!/usr/bin/env python3
 
 import argparse
 import subprocess

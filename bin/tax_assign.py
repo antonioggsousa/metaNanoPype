@@ -99,7 +99,7 @@ def build_kraken2_db(db_dir, db_name, threads = 1):
     '''
 
     ## Check input
-    db_available: ["silva", "greengenes", "rdp"]
+    db_available = ["silva", "greengenes", "rdp"]
     if db_name not in db_available: 
         sys.exit("The " + db_name + " 'db_name' provided is not among the databases available!\n\
                  Please provide as db_name 'silva', 'greengenes' or 'rdp'.\n\
@@ -119,7 +119,7 @@ def build_kraken2_db(db_dir, db_name, threads = 1):
     ## Download database 
     check_tool("kraken2-build") # check if tool is in your PATH
     print("Downloading " + db_name + " ...")
-    subprocess.run(["kraken2-build", "--standard", "--db", db_dir, "--special", db_name, 
+    subprocess.run(["kraken2-build", "--db", db_dir, "--special", db_name, 
                     "--threads", str(threads)])
     print(db_name + " downloaded at: " + db_dir)
 
