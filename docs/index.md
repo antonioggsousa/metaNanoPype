@@ -76,7 +76,7 @@ Then, for each module step it requires several third-party, stand-alone tools in
    + (V) taxonomic classification (*under development*); 
 
       + **kraken2** v.2.1.1 (*[installation](https://github.com/DerrickWood/kraken2/wiki/Manual#installation)*) 
-   
+      
    + (VI) diversity analyses (alpha- and beta-diversity) (*not implemented yet*). 
 
 
@@ -96,7 +96,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
-0. Create the directory structure to reproduce the tutorial and scripts:
+0) Create the directory structure to reproduce the tutorial and scripts:
 
     Change into the directory where you want to reproduce the tutorial and create the directory structure:
 
@@ -116,7 +116,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
-1. Download the full-length 16S rRNA amplicon fastq files: 
+1) Download the full-length 16S rRNA amplicon fastq files: 
 
     The fastq files were deposited in ENA (European Nucleotide Archive) under the project accession number: [PRJEB37709](https://www.ebi.ac.uk/ena/browser/view/PRJEB37709). 
 
@@ -146,7 +146,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
-2. Assess the quality of the nanopore full-length 16S rRNA amplicon sequences with [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [NanoPlot](https://github.com/wdecoster/NanoPlot) and [multiqc](https://multiqc.info/) in one command-line with the `fastqc-py` **metaNanoPype** script: 
+2) Assess the quality of the nanopore full-length 16S rRNA amplicon sequences with [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [NanoPlot](https://github.com/wdecoster/NanoPlot) and [multiqc](https://multiqc.info/) in one command-line with the `fastqc-py` **metaNanoPype** script: 
 
     Change directory to scripts to save the `log` under the script folder:
 
@@ -164,7 +164,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
-3. The next step consists in filtering and trimming bad quality nanopore sequences using [porechop](https://github.com/rrwick/Porechop) and [NanoFilt](https://github.com/wdecoster/nanofilt) in one command-line with the `filter_fastq-py` **metaNanoPype** script: 
+3) The next step consists in filtering and trimming bad quality nanopore sequences using [porechop](https://github.com/rrwick/Porechop) and [NanoFilt](https://github.com/wdecoster/nanofilt) in one command-line with the `filter_fastq-py` **metaNanoPype** script: 
 
         filter_fastq-py --help # display options
         
@@ -177,7 +177,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
-4. Re-assess the quality of the reads after filtering/trimming them with the `fastqc-py` **metaNanoPype** script: 
+4) Re-assess the quality of the reads after filtering/trimming them with the `fastqc-py` **metaNanoPype** script: 
 
         fastqc-py -f ../data/trim -n True -t 10 -o ../results/QC_trim
 
@@ -185,7 +185,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
-5. Perform taxonomic assignment with [kraken2](https://ccb.jhu.edu/software/kraken2/), inclusive the download of 16S rRNA reference databases indexed, in one command-line with the `tax_assign-py` **metaNanoPype** script:
+5) Perform taxonomic assignment with [kraken2](https://ccb.jhu.edu/software/kraken2/), inclusive the download of 16S rRNA reference databases indexed, in one command-line with the `tax_assign-py` **metaNanoPype** script:
 
         tax_assign-py --help # display options
 
