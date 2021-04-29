@@ -198,9 +198,9 @@ The previous command works by running first `Porechop` and creating fastq files 
         tax_assign-py --help # display options
 
         # create variables to simplify
-        $FASTQ=$(ls ../data/trim/*.fastq.gz | xargs echo | sed 's/ /,/g')
-        $SAMPLES=$(echo $FASTQ | sed 's/..\/data\/trim\/\|.fastq.gz//g')
-        $DB=../data/SILVA_DB
+        FASTQ=$(ls ../data/trim/*_trimmed.fastq | xargs echo | sed 's/ /,/g')
+        SAMPLES=$(echo $FASTQ | sed 's/..\/data\/trim\/\|_trimmed.fastq//g')
+        DB=../data/SILVA_DB
 
         tax_assign-py -i $FASTQ -t 10 -db $DB -db_down silva -s $SAMPLES -r -o ../results/tax
 
