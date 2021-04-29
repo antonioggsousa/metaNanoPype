@@ -884,7 +884,7 @@ def cmd_log(script_file, program, pattern_version, args, parse_args_dic):
         log_file = open(script_file + ".log", "a")
         #if os.stat(script_file + ".log").st_size == 0: # if file is empty      
         log_file.write(script_file + " run: " + str(datetime.datetime.now()) + "\n")
-        cmd_line = "./" + script_file
+        cmd_line = script_file
         for arg in vars(args):
             if getattr(args, arg) is not None and type(getattr(args, arg)) is not bool: 
                 cmd_line = cmd_line + " " + str(parse_args_dic[arg]) + " " + str(getattr(args, arg))

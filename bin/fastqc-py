@@ -46,7 +46,7 @@ if fastqc != 0:
 else: 
     log_file = open("fastqc-py.log", "a")
     log_file.write("fastqc-py run: " + str(datetime.datetime.now()) + "\n")
-    cmd_line = "./fastqc-py"
+    cmd_line = "fastqc-py"
     for arg in vars(args):
         if getattr(args, arg) is not None: 
             cmd_line = cmd_line + " " + args_dic[arg] + " " + getattr(args, arg)
