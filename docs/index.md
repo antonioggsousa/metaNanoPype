@@ -138,7 +138,7 @@ Create a new folder with all individual fastq files inside and delete the previo
 
         mkdir fastq
 
-        mv */*.fastq.gz ./fastq
+        mv ./PRJEB37709/*/*.fastq.gz ./fastq
 
         rm -rf ./PRJEB37709
 
