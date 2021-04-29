@@ -150,7 +150,7 @@ Create a new folder with all individual fastq files inside and delete the previo
 
 Change directory to scripts to save the `log` under the script folder:
 
-        cd ../script
+        cd ../scripts
 
         fastqc-py --help # display options
 
