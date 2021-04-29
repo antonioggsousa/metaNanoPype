@@ -172,7 +172,7 @@ You can inspect the quality of the nanopore 16S sequences by looking into the in
 
         filter_fastq-py --help # display options
         
-        filter_fastq-py -f ../data/fastq -t 10 -min_len 1000 -max_len 1700 -qs 10 -o ../data/trim    
+        filter_fastq-py -f ../data/fastq -t 10 -min_len 1000 -max_len 1800 -qs 10 -o ../data/trim    
 
 The command above is filtering/trimming the fastq files given in the folder (`-f` option) `../data/fastq`, using 10 threads (`-t 10` - passed to `Porechop`) and discarding reads shorter than 1000 bp (`-min_len 1000`) or longer than 1700 bp (`-max_len 1700`) as well as reads with a quality-score lower than 10 (`-qs 10`). The output good-quality full-length nanopore reads are saved at `../data/trim` (with the option `-o ../data/trim`). Find more options with the `filter_fastq-py --help` command. 
 
