@@ -141,6 +141,10 @@ Create a new folder with all individual fastq files inside and delete the previo
         mv ./PRJEB37709/*/*.fastq.gz ./fastq
 
         rm -rf ./PRJEB37709
+        
+>Remove the fastq file ERR4836977.fastq.gz because fastqc raises an exception error message when processing it that we need to take a deeper look into it. For now just remove it:  
+        
+        rm ./fastq/ERR4836977.fastq.gz
 
 <br>
 
