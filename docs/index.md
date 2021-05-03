@@ -79,6 +79,19 @@ Then, for each module step it requires several third-party, stand-alone tools in
       
    + (VI) diversity analyses (alpha- and beta-diversity) (*not implemented yet*). 
 
+<br>
+
+An easier way to install all the softwares and dependencies without trouble is using the `environment.yaml` file provided in **metaNanoPype** repository to create a conda environment wiht all the softwares/dependencies. To do so, do the following (you need to have [git](https://github.com/git-guides/install-git) and [miniconda3](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) installed): 
+
+        git clone https://github.com/antonioggsousa/metaNanoPype.git # download metaNanoPype repo
+        
+        export PATH="$PWD/metaNanoPype/bin:$PATH" # make it accessible in your PATH
+
+        conda activate # activate conda
+
+        conda env create -f ./metaNanoPype/environment.yaml # create conda env with all soft/dependencies
+
+        conda activate metaNanoPype # activate new conda env
 
 <br>
 
@@ -111,6 +124,14 @@ Download **metaNanoPype** scripts:
 Next, add the **metaNanoPype** bin folder to your **PATH**:
 
         export PATH="$PWD/metaNanoPype/bin:$PATH"
+        
+Ultimately, install all the softwares and dependencies necessary to work with **metaNanoPype** and run this tutorial using miniconda3 (please install miniconda3 first if you don't have it already installed -  see [instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)): 
+
+        conda activate # activate conda
+
+        conda env create -f ./metaNanoPype/environment.yaml # create conda env with all soft/dependencies
+
+        conda activate metaNanoPype # activate new conda env
 
 <br>
 
