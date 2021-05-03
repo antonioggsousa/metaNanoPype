@@ -105,7 +105,7 @@ For this quick start tutorial it will be used the publicly available data of nan
 
 <br>
 
->This tutorial was performed in a server with the OS Ubuntu 18.04.5 LTS and 20 cores and ~120 Gb RAM. Generally many of the commands used can be reproduced in any Linux distribution or even UNIX OS. It assumes that the several dependencies are already installed and available in your `PATH`.    
+>This tutorial was performed in a server with the OS Ubuntu 18.04.5 LTS and 20 cores and ~120 Gb RAM. Generally many of the commands used can be reproduced in any Linux distribution or even UNIX OS. You will start this tutorial by downloading the metaNanoPype GitHub repository and installing the conda recipe to create the conda environment with all the dependencies using miniconda3.    
 
 <br>
 
