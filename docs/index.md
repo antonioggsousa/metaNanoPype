@@ -179,9 +179,9 @@ Change directory to scripts to save the `log` under the script folder:
 
         fastqc-py --help # display options
 
-        fastqc-py -f ../data/fastq -n True -t 10 -o ../results/QC
+        fastqc-py -f ../data/fastq -n -t 10 -o ../results/QC
 
-The command above will give as input all the fastq files in the folder (`-f` option) `../data/fastq`, it will run `NanoPlot` (`-n True`), with 10 threads (`-t 10`) and the output result (`-o` option) will be saved in the folder `../results/QC`.
+The command above will give as input all the fastq files in the folder (`-f` option) `../data/fastq`, it will run `NanoPlot` (`-n`), with 10 threads (`-t 10`) and the output result (`-o` option) will be saved in the folder `../results/QC`.
 
 You can inspect the quality of the nanopore 16S sequences by looking into the individual html files produced by `fastqc` or the aggregated html report produced by `multiqc` as well the report produced by `Nanoplot` at: `../results/QC`. Through this way, you can have a good picture about the quality of your data. 
 
@@ -208,7 +208,7 @@ The previous command works by running first `Porechop` and creating fastq files 
 
 4) Re-assess the quality of the reads after filtering/trimming them with the `fastqc-py` **metaNanoPype** script: 
 
-        fastqc-py -f ../data/trim -n True -t 10 -o ../results/QC_trim
+        fastqc-py -f ../data/trim -n -t 10 -o ../results/QC_trim
 
 <br>
 
