@@ -8,8 +8,6 @@
 # programs: 'fastqc' (v.0.11.5), 'multiqc' (v.1.9) & NanoPlot (v.1.29.1)
 #
 # TODO: 
-#    + add 'thread' option to 'fastqc' 
-#    + add better argument to the '-n' option than 'True'
 #-------------------------------------------------------------------------------------------------------
 
 import argparse
@@ -23,13 +21,37 @@ import datetime
 parser = argparse.ArgumentParser(description='Run QC on fastq files!')
 parser.add_argument('-i', action="store", dest="input", type=str, help='fastq file')
 parser.add_argument('-f', action="store", dest="folder", type=str, help='fastq folder')
-parser.add_argument('-n', action="store", dest="nanopore", type=str, \
-        help='if "True" use -f folder to run also NanoPlot [only works with -f and -o]')
+parser.add_argument('-n', action='store_true', dest="nanopore", default=False, \
+        help="given the option '-n' use '-f' folder to run also NanoPlot [only works with '-f' and '-o']")
 parser.add_argument('-t', action="store", dest="threads", type=str, \
-        help='no. of threads [only works with -n - default -t 1]')
+        help='no. of threads passed to fastqc and NanoPlot [default -t 1]')
 parser.add_argument('-o', action="store", dest="output", type=str, help='output folder name')
 args = parser.parse_args()
 args_dic = {"input": "-i", "folder": "-f", "nanopore": "-n", "threads": "-t", "output": "-o"}
+
+## Check if programs are available
+# fastqc
+fastqc = subprocess.call(["which", "fastqc"], stdout = subprocess.PIPE)
+fastqc_install = subprocess.run(["which", "fastqc"], stdout = subprocess.PIPE)
+fastqc_version = subprocess.run(["fastqc", "-v"], stdout = subprocess.PIPE)
+if fastqc != 0:
+    print("fastqc is not in your PATH!")
+    sys.exit("Install or export fastqc to your PATH! Exiting...")
+# multiqc
+multiqc = subprocess.call(["which", "multiqc"], stdout = subprocess.PIPE)
+multiqc_install = subprocess.run(["which", "multiqc"], stdout = subprocess.PIPE)
+multiqc_version = subprocess.run(["multiqc", "--version"], stdout = subprocess.PIPE)
+if multiqc != 0:
+    print("multiqc is not in your PATH!")
+    sys.exit("Install or export multiqc to your PATH! Exiting...")
+# nanoplot
+if args.nanopore: 
+    nanoplot = subprocess.call(["which", "NanoPlot"], stdout = subprocess.PIPE)
+    nanoplot_install = subprocess.run(["which", "NanoPlot"], stdout = subprocess.PIPE)
+    nanoplot_version = subprocess.run(["NanoPlot", "--version"], stdout = subprocess.PIPE)
+    if nanoplot != 0:
+        print("NanoPlot is not in your PATH!")
+        sys.exit("Install or export NanoPlot to your PATH! Exiting...")
 
 # Create out dir
 if args.output is not None: 
@@ -37,53 +59,43 @@ if args.output is not None:
         os.makedirs(args.output)
 
 # Run fastQC
-fastqc = subprocess.call(["which", "fastqc"], stdout = subprocess.PIPE)
-fastqc_install = subprocess.run(["which", "fastqc"], stdout = subprocess.PIPE)
-fastqc_version = subprocess.run(["fastqc", "-v"], stdout = subprocess.PIPE)
-if fastqc != 0:
-    print("fastqc is not in your PATH!")
-    sys.exit("Install or export fastqc to your PATH! Exiting...")
-else: 
-    log_file = open("fastqc-py.log", "a")
-    log_file.write("fastqc-py run: " + str(datetime.datetime.now()) + "\n")
-    cmd_line = "fastqc-py"
-    for arg in vars(args):
-        if getattr(args, arg) is not None: 
-            cmd_line = cmd_line + " " + args_dic[arg] + " " + getattr(args, arg)
-    log_file.write("fastqc-py command-line: " + cmd_line)
-    log_file.write("\n\n---\n\n")
-    log_file.write(fastqc_version.stdout.decode())
-    log_file.write("fastqc installed: " + fastqc_install.stdout.decode() )
+log_file = open("fastqc-py.log", "a")
+log_file.write("fastqc-py run: " + str(datetime.datetime.now()) + "\n")
+cmd_line = "fastqc-py"
+for arg in vars(args):
+    #if getattr(args, arg) is not None: 
+        #cmd_line = cmd_line + " " + args_dic[arg] + " " + getattr(args, arg)
+    if getattr(args, arg) is not None and type(getattr(args, arg)) is not bool: 
+        cmd_line = cmd_line + " " + str(args_dic[arg]) + " " + str(getattr(args, arg))
+    if getattr(args, arg) is True: 
+        cmd_line = cmd_line + " " + str(args_dic[arg])            
+log_file.write("fastqc-py command-line: " + cmd_line)
+log_file.write("\n\n---\n\n")
+log_file.write(fastqc_version.stdout.decode())
+log_file.write("fastqc installed: " + fastqc_install.stdout.decode() )
 if args.input is not None: # check if there is a fastq file only or a fastq folder
     if args.output is not None: 
-        subprocess.run(["fastqc", args.input, "-o", args.output, "-q"])
+        subprocess.run(["fastqc", args.input, "-o", args.output, "-q", "-t", args.threads])
     else:
-        subprocess.run(["fastqc", args.input, "-q"])
+        subprocess.run(["fastqc", args.input, "-q", "-t", args.threads])
 if args.folder is not None:
     fastq_files = subprocess.run(["ls " +  args.folder + "/*.fastq*"], \
             shell = True, stdout = subprocess.PIPE)
     fastq_list = fastq_files.stdout.decode().split('\n')
     fastq_list_final = list(filter(None, fastq_list))
     for fastq in fastq_list_final:
-        print("Processing file:", os.path.basename(fastq))
+        print("Processing file (with fastqc):", os.path.basename(fastq))
         if args.output is not None:
-            subprocess.run(["fastqc", fastq, "-o", args.output, "-q"])
+            subprocess.run(["fastqc", fastq, "-o", args.output, "-q", "-t", args.threads])
         else:
-            subprocess.run(["fastqc", fastq, "-q"])
+            subprocess.run(["fastqc", fastq, "-q", "-t", args.threads])
 
 # Run multiQC
-multiqc = subprocess.call(["which", "multiqc"], stdout = subprocess.PIPE)
-multiqc_install = subprocess.run(["which", "multiqc"], stdout = subprocess.PIPE)
-multiqc_version = subprocess.run(["multiqc", "--version"], stdout = subprocess.PIPE)
-if multiqc != 0:
-    print("multiqc is not in your PATH!")
-    sys.exit("Install or export multiqc to your PATH! Exiting...")
-else: 
-    log_file.write("\n---\n\n")
-    log_file.write(multiqc_version.stdout.decode())
-    log_file.write("multiqc installed: " + multiqc_install.stdout.decode() )
-    log_file.close()
-
+log_file.write("\n---\n\n")
+log_file.write(multiqc_version.stdout.decode())
+log_file.write("multiqc installed: " + multiqc_install.stdout.decode() )
+log_file.close()
+print("Summarizing fastqc reports with multiqc!")
 if args.output is not None: 
     subprocess.run(["multiqc " + args.output + "/*_fastqc.zip " + \
             "-o " + args.output + " -q"], shell = True)
@@ -94,18 +106,11 @@ else:
 
 # Run NanoPlot on nanopore fastq files (folder)
 if args.nanopore: 
-    nanoplot = subprocess.call(["which", "NanoPlot"], stdout = subprocess.PIPE)
-    nanoplot_install = subprocess.run(["which", "NanoPlot"], stdout = subprocess.PIPE)
-    nanoplot_version = subprocess.run(["NanoPlot", "--version"], stdout = subprocess.PIPE)
-    if nanoplot != 0:
-        print("NanoPlot is not in your PATH!")
-        sys.exit("Install or export NanoPlot to your PATH! Exiting...")
-    else:
-        log_file = open("fastqc-py.log", "a")
-        log_file.write("\n---\n\n")
-        log_file.write(nanoplot_version.stdout.decode())
-        log_file.write("NanoPlot installed: " + nanoplot_install.stdout.decode() )
-        log_file.close()
+    log_file = open("fastqc-py.log", "a")
+    log_file.write("\n---\n\n")
+    log_file.write(nanoplot_version.stdout.decode())
+    log_file.write("NanoPlot installed: " + nanoplot_install.stdout.decode() )
+    log_file.close()
     if args.threads is None: 
         args.threads = 1 # default 1 thread
     if args.folder is not None:
