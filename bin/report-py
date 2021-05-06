@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+#-------------------------------------------------------------------------------------------------------
+# author: António Sousa
+# written: 06/06/2021
+# updated: 06/06/2021
+# 
+# programs:
+#
+# TODO: 
+#-------------------------------------------------------------------------------------------------------
+
+# import libraries
+from report import *
+import argparse
+
+# Define arguments
+parser = argparse.ArgumentParser(description='Build report!')
+parser.add_argument('-d', action="store", dest="directory", type=str, default="./", \
+        help='folder directory with all the log files')
+parser.add_argument('-i', action="store", dest="input", type=str, default=None, \
+        help='comma separated list of log files')
+parser.add_argument('-f', action="store", dest="filename", type=str, default=None, \
+        help='filename to give to the md and html reports')
+parser.add_argument('-n', action="store", dest="report", type=str, default= "metaNanoPype reproducible report", \
+        help='name to give to the report title')
+parser.add_argument('-a', action="store", dest="author", type=str, default="", \
+        help='author name to give in the report')       
+args = parser.parse_args()
+args_dic = {"directory": "-d", "input": "-i", "filename": "-f", "report": "-n", "author": "-a"}
+
+# build report
+build_report(dir_log = args.directory, log_list = args.input, \
+        filename = args.filename, report_name = args.report, author = args.author)

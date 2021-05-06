@@ -108,6 +108,8 @@ def build_report(dir_log = "./", log_list = None, filename = None,
     # file name
     if filename is None: 
         filename = "metaNanoPype_report_" + date_today + ".md"
+    else: 
+        filename = filename + ".md"
 
     md_file = open(filename, "w")
 
