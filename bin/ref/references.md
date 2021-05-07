@@ -1,6 +1,8 @@
 ### References
 
->if you have used `fastqc-py` module, please cite:
+<br>
+
+*__If you have used `fastqc-py` module, please cite:__*
 
 *fastqc*: Andrews, Simon. "FastQC: a quality control tool for high throughput sequence data. 2010." (2017).
 
@@ -10,7 +12,7 @@
 
 <br>
 
->if you have used `filter_fastq-py` module, please cite:
+*__If you have used `filter_fastq-py` module, please cite:__*
 
 *Porechop*: "Adapter trimmer for Oxford Nanopore reads." [https://github.com/rrwick/Porechop](https://github.com/rrwick/Porechop)
 
@@ -18,6 +20,6 @@
 
 <br>
 
->if you have used `tax_assign-py` module, please cite:
+*__If you have used `tax_assign-py` module, please cite:__*
 
 *kraken2*: Wood, Derrick E., Jennifer Lu, and Ben Langmead. "Improved metagenomic analysis with Kraken 2." Genome biology 20.1 (2019): 1-13.

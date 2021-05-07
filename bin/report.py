@@ -17,6 +17,7 @@
 import os
 import sys
 import time
+import subprocess
 
 def grab_logs(dir_log = "./", log_list = None): 
 
@@ -69,7 +70,7 @@ import re
 
 def build_report(dir_log = "./", log_list = None, filename = None, 
                  report_name = "metaNanoPype reproducible report", 
-                 author = ""): 
+                 author = "", references = None): 
 
     '''
     'build_report()': build a reproducible report in markdown and 
@@ -97,6 +98,9 @@ def build_report(dir_log = "./", log_list = None, filename = None,
 
     'author': name of the author building the report (str). 
     By default is '""'.
+
+    'references': reference file name (str) to import and add to the 
+    report.
     '''
 
     ## check
@@ -135,17 +139,34 @@ def build_report(dir_log = "./", log_list = None, filename = None,
         # highlight differently different script runs
         md_file.write("\n<br>\n")
         md_file.write("\n---\n")
-        
+    
+    # add references
+    if references is None:
+        try: 
+            references = subprocess.run(["which", "report-py"], stdout = subprocess.PIPE)
+            references = os.path.dirname(references.stdout.decode())
+            references = references + "/ref/references.md"
+        except: 
+            references = None
+    if references is not None and os.path.isfile(references): 
+
+        md_file.write("\n<br>\n")
+        md_file.write("\n<br>\n")
+        md_file.write("\n---\n")
+        md_file.write("\n<br>\n")
+        ref_file = open(references, "r")
+        for line in ref_file: 
+            md_file.write(line)
+        ref_file.close()
+        md_file.write("\n<br>\n")
+        md_file.write("\n---\n")
+
     # build footer
-    md_file.write("\n<br>\n\n")
-    md_file.write("\n<br>\n\n")
-    md_file.write("\n<br>\n\n")
-    md_file.write("\n<br>\n\n")
     md_file.write("\n<br>\n\n")
     md_file.write("\n<br>\n")
     md_file.write("\n---\n")    
     md_file.write("\n<br>\n\n")
-    md_file.write("GitHub **metaNanoPype** project page: <a href='https://github.com/antonioggsousa/metaNanoPype' target='_blank'>https://github.com/antonioggsousa/metaNanoPype</a>\n")
+    md_file.write("**metaNanoPype** project page: <a href='https://antonioggsousa.github.io/metaNanoPype' target='_blank'>https://antonioggsousa.github.io/metaNanoPype</a>\n")
     #md_file.write("GitHub **metaNanoPype** project page: [https://github.com/antonioggsousa/metaNanoPype](https://github.com/antonioggsousa/metaNanoPype)\n")
     md_file.write("\n<br>\n")
     #md_file.write("\n---\n")

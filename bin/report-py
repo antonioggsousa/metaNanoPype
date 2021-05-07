@@ -26,6 +26,8 @@ parser.add_argument('-n', action="store", dest="report", type=str, default= "met
         help='name to give to the report title')
 parser.add_argument('-a', action="store", dest="author", type=str, default="", \
         help='author name to give in the report')       
+parser.add_argument('-l', action="store", dest="library", type=str, default=None, \
+        help='reference file name to import and add to the report')    
 args = parser.parse_args()
 args_dic = {"directory": "-d", "input": "-i", "filename": "-f", "report": "-n", "author": "-a"}
 
