@@ -1,0 +1,341 @@
+---
+title: 'metaNanoPype reproducible report'
+author: ""
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+bibliography: bibliography.bib
+output: 
+  html_document:
+    toc: true 
+    toc_float: true
+    theme: united
+    code_folding: hide
+params: 
+  input: input 
+  output: output
+---
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+## Report
+
+<br>
+
+This is a reproducible report of the taxonomic and diversity analyses produced by [metaNanoPype](https://antonioggsousa.github.io/metaNanoPype/).
+
+<br>
+
+The figures and tables displayed through the report can be downloaded in *pdf* and *tab-separated* format by clicking on the bottom left **Download plot** and **Download table** button that appears after each plot and table, respectively. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	fig.align = "center",
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+```{r klippy, echo=FALSE}
+klippy::klippy(position = c('top', 'right'))
+```
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+## About this report
+
+<br>
+
+This report was built with the `rmarkdown` R package (v.`r packageVersion("rmarkdown")`) [@rmarkdown_1; @rmarkdown_2; @rmarkdown_3]. The R version used was `r paste0(version$major, ".", version$minor)` [@r]. The taxonomic and divesity analyses were done with the `phyloseq` R package (v.`r packageVersion("phyloseq")`) [@phyloseq]. See the full list of packages and versions used at the end of this report - **R packages used and respective versions**.
+
+```{r seed}
+
+## Set seed 
+set.seed(seed = 1024) # to keep reproducibility
+
+```
+
+```{r import packages, message=FALSE, warning=FALSE}
+
+## Import packages 
+library("DT", quietly = TRUE) 
+library("ggplot2", quietly = TRUE)
+library("phyloseq", quietly = TRUE)
+source("./metaNanoPype_helper_funs.R")
+
+```
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+## Taxonomy & Diversity
+
+<br>
+
+### Taxonomic table
+
+<br>
+
+```{r import & parse tax abund tbl}
+
+# Import data
+metananopype[["plots"]] <- metananopype[["params"]] <- metananopype[["data"]] <- metananopype <- list()
+metananopype$params[["tax_path"]] <- params$input
+metananopype$params[["out_path"]] <- params$output
+files2import <- list.files(path = metananopype$params$tax_path, 
+                           pattern = "\\.report", full.names = TRUE)
+metananopype$params[["samples"]] <- gsub(pattern = ".report", replacement = "", 
+                                         x = basename(files2import))
+metananopype$data[["kraken2"]] <- lapply(X = setNames(files2import, metananopype$params$samples), 
+                                         function(x, y = "\t", z = FALSE) read.table(file = x, sep = y, stringsAsFactors = z), 
+                                         y = "\t", z = FALSE)
+
+# Parse table
+metananopype$data[["kraken2_parsed"]] <- lapply(metananopype$data$kraken2, function(x) parse_kraken2_report(x))
+metananopype$data[["kraken2_parsed"]] <- lapply(metananopype$data$kraken2_parsed, 
+                                                function(x, cols2sel = c(1,3)) x[,cols2sel], cols2sel = c(1,3))
+for ( x in names(metananopype$data$kraken2_parsed)) colnames(metananopype$data$kraken2_parsed[[x]])[2] <- x
+metananopype$data[["tax_tbl"]] <- merge_tax_tbl(list_tbls = metananopype$data$kraken2_parsed, merge_by = "Taxonomy")
+
+# save table
+if ( ! dir.exists(metananopype$params$out_path) ) dir.create(metananopype$params$out_path, recursive = TRUE)
+write.table(x = cbind("Seq_id" = rownames(metananopype$data$tax_tbl),
+                      metananopype$data$tax_tbl),
+            file = paste(metananopype$params$out_path, "taxonomic_abundance_tbl.tsv", sep = "/"), 
+            sep = "\t", row.names = FALSE)
+
+```
+
+```{r echo=FALSE}
+datatable(data = metananopype$data$tax_tbl, extensions = "Buttons", caption = "Taxonomic abundance table.", 
+          options = list(dom = "Blfrtip", buttons = c('csv', 'excel')))     
+```
+
+<br>
+
+```{r echo=FALSE}
+## Download the latest table
+downloadthis::download_file(
+  path = paste(metananopype$params[["out_path"]], "taxonomic_abundance_tbl.tsv", sep = "/"),
+  output_name = "taxonomic_abundance_tbl.tsv",
+  button_label = "Download table",
+  button_type = "danger",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = TRUE
+)
+```
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+### Taxonomic barplot - Phylum
+
+<br>
+
+```{r import phyloseq}
+
+## Import into phyloseq 
+# 'tax_table'
+full_tax <- metananopype$data$tax_tbl$Taxonomy
+names(full_tax) <- row.names(metananopype$data$tax_tbl)
+tax_tbl <- tax_to_physeq(full_tax = full_tax, split_by = "; ")
+# 'otu_table
+otu_tbl <- phyloseq::otu_table(object = as.matrix(metananopype$data$tax_tbl[,-1]), 
+                               taxa_are_rows = TRUE)
+# 'sam_data'
+metadata <- data.frame("Samples" = colnames(metananopype$data$tax_tbl[,-1]), 
+                       "SampleType" = colnames(metananopype$data$tax_tbl[,-1]))
+row.names(metadata) <- metadata$Samples
+metadata <- sample_data(metadata)
+# phyloseq obj
+metananopype$data[["physeq"]] <- phyloseq::phyloseq(otu_tbl, tax_tbl, metadata)
+
+```
+
+```{r tax barplot - phylum}
+
+# Plot taxonomy
+metananopype[["plots"]][["tax"]][["phyla"]] <- metananopype[["plots"]][["tax"]] <- list()
+metananopype[["plots"]][["tax"]][["phyla"]] <- phyloseq::plot_bar(physeq = metananopype$data[["physeq"]], fill = "Phylum")
+ggsave(filename = paste(metananopype$params[["out_path"]], "phyla_tax_barplot.pdf", sep = "/"), 
+       plot = metananopype[["plots"]][["tax"]][["phyla"]])
+print(metananopype[["plots"]][["tax"]][["phyla"]])
+
+```
+
+<br>
+
+```{r echo=FALSE}
+## Download the latest plot
+downloadthis::download_file(
+  path = paste(metananopype$params[["out_path"]], "phyla_tax_barplot.pdf", sep = "/"),
+  output_name = "phyla_tax_barplot.pdf",
+  button_label = "Download barplot",
+  button_type = "danger",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = TRUE
+)
+```
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+### Alpha-diversity
+
+<br>
+
+```{r alpha-div}
+
+# Plot alpha diversity
+metananopype[["plots"]][["div"]][["alpha"]] <- list()
+metananopype[["plots"]][["div"]][["alpha"]] <- phyloseq::plot_richness(physeq = metananopype$data[["physeq"]])
+ggsave(filename = paste(metananopype$params[["out_path"]], "alpha_div_dotplot.pdf", sep = "/"), 
+       plot = metananopype[["plots"]][["div"]][["alpha"]])
+print(metananopype[["plots"]][["div"]][["alpha"]])
+
+```
+
+<br>
+
+```{r echo=FALSE}
+## Download the latest plot
+downloadthis::download_file(
+  path = paste(metananopype$params[["out_path"]], "alpha_div_dotplot.pdf", sep = "/"),
+  output_name = "alpha_div_dotplot.pdf",
+  button_label = "Download dotplot",
+  button_type = "danger",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = TRUE
+)
+```
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+### Beta-diversity
+
+<br>
+
+```{r beta-div}
+
+# Plot beta diversity
+metananopype[["plots"]][["div"]][["beta"]] <- list()
+metananopype$data[["ord"]] <- phyloseq::ordinate(physeq = metananopype$data[["physeq"]], 
+                                                 method = "PCoA", distance = "bray")
+metananopype[["plots"]][["div"]][["beta"]] <- phyloseq::plot_ordination(physeq = metananopype$data[["physeq"]],
+                                                                        ordination = metananopype$data[["ord"]], 
+                                                                        color = "Samples")
+ggsave(filename = paste(metananopype$params[["out_path"]], "beta_div_plot.pdf", sep = "/"), 
+       plot = metananopype[["plots"]][["div"]][["beta"]])
+print(metananopype[["plots"]][["div"]][["beta"]])
+
+```
+
+<br>
+
+```{r echo=FALSE}
+## Download the latest plot
+downloadthis::download_file(
+  path = paste(metananopype$params[["out_path"]], "beta_div_plot.pdf", sep = "/"),
+  output_name = "beta_div_plot.pdf",
+  button_label = "Download plot",
+  button_type = "danger",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = TRUE
+)
+```
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+#### R packages used and respective versions
+
+```{r References, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+## R packages and versions used in these analyses
+
+sessionInfo()
+
+```
+
+<br>
+
+<br>
+
+---   
+
+<br>
+
+<br>
+
+**metaNanoPype** project page: <a href='https://antonioggsousa.github.io/metaNanoPype' target='_blank'>https://antonioggsousa.github.io/metaNanoPype</a>
+
+<br>
+
+<br>
+
+---
+
+<br>
+
+<br>
+
+## References
+
+<br>
+
+\printbibliography

@@ -55,11 +55,11 @@ parse_kraken2_report <- function(kraken2_report) {
       tax_parsed[nrow(tax_parsed),"Percentage"] <- kraken2_report[t-1,1]
       tax_parsed[nrow(tax_parsed),"Abundance"] <- kraken2_report[t-1,2]
       # parse the next tax
-      rank_tax <- c(rank_tax[1:(rank_no-1)], trimws(kraken2_report[t,6])) # update the full tax path
+      rank_tax <- c(rank_tax[0:(rank_no-1)], trimws(kraken2_report[t,6])) # update the full tax path
     }
   }
   # save the last full tax path in the table
-  tax_parsed[nrow(tax_parsed)+1,"Taxonomy"] <- paste(rank_tax, collapse = ";")
+  tax_parsed[nrow(tax_parsed)+1,"Taxonomy"] <- paste(rank_tax, collapse = "; ")
   tax_parsed[nrow(tax_parsed),"Percentage"] <- kraken2_report[t-1,1]
   tax_parsed[nrow(tax_parsed),"Abundance"] <- kraken2_report[t-1,2]
   return(tax_parsed)
@@ -93,6 +93,48 @@ merge_tax_tbl <- function(list_tbls, merge_by) {
     }
   }
   merged_tbl[is.na(merged_tbl)] <- 0 # substitute NA by 0
+  rownames(merged_tbl) <- paste0("seq_", 1:nrow(merged_tbl))
   return(merged_tbl)
+}
+
+## create function to parse tax into tax_table() for phyloseq
+# 
+tax_to_physeq <- function(full_tax, split_by = "; ", 
+                          tax_ranks = c("Kingdom", "Phylum", 
+                                        "Class", "Order", 
+                                        "Family", "Genus", 
+                                        "Species")) {
+  
+  # 'tax_to_physeq()': convert a vector with full taxonomic 
+  #names into a data frame with the different taxonomic names 
+  #separated by taxonomic rank. Named vector with seq id identification. 
+  # 'full_tax': character vector with full taxonomic names, e.g., 
+  #"Bacteria; Actinobacteriota; Acidimicrobiia; Microtrichales; Ilumatobacteraceae; uncultured".
+  # 'split_by': character symbol to split the full taxonomic 
+  #names. By default is '; '.
+  # 'tax_ranks': character vector of taxonomic ranks to use 
+  #to build the taxonomic data frame. If a rank does not exist
+  #it will be filled in with NAs.
+  
+  # build data frame 
+  tax_tbl <- data.frame(
+    stringsAsFactors = FALSE 
+  )
+  tx_no <- length(tax_ranks)
+  
+  # split full taxonomy
+  tax = lapply(full_tax, function(x) strsplit(x = x, split = split_by)[[1]])
+  
+  # loop over each full taxonomic name and fill the table
+  ct <- 0
+  for ( tx in tax ) {
+    ct <- ct + 1 
+    # if full taxonomic names do not have all the ranks fill with NAs
+    if ( length(tx) < tx_no ) tx[(length(tx)+1):tx_no] <- NA
+    tax_tbl[ct, tax_ranks] <- tx[1:tx_no]
+  }
+  row.names(tax_tbl) <- names(full_tax)
+  tax_tbl <- phyloseq::tax_table(as.matrix(tax_tbl))
+  return(tax_tbl)
 }
 #---------------------------------------------------------------------------------------------------

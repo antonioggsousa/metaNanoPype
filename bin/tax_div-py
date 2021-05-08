@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+#-------------------------------------------------------------------------------------------------------
+# author: António Sousa
+# written: 08/05/2021
+# updated: 08/05/2021
+# 
+# programs: issue with 'pandoc-citeproc' (sudo apt-get install pandoc-citeproc)
+#
+# TODO: 
+#-------------------------------------------------------------------------------------------------------
+
+# import libraries
+import os
+import argparse
+import subprocess 
+
+# Define arguments
+parser = argparse.ArgumentParser(description='Taxonomic and diversity analyses!')
+parser.add_argument('-d', action="store", dest="directory", type=str, default="./", \
+        help='folder directory with all the kraken2 report files [with the extension .report]')
+parser.add_argument('-o', action="store", dest="output", type=str, default="./", \
+        help='output folder to save all the files')
+parser.add_argument('-r', action="store", dest="report", type=str, default= "metaNanoPype_report.html", \
+        help='filename to give to the html report')
+args = parser.parse_args()
+args_dic = {"directory": "-d", "output": "-o", "report": "-r"}
+
+# get absolute file paths if not provided
+if os.path.isabs(args.directory) is not True: 
+        args.directory = os.path.abspath(args.directory)
+if os.path.isabs(args.output) is not True: 
+        args.output = os.path.abspath(args.output)
+if os.path.isabs(args.report) is not True: 
+        args.report = os.path.abspath(args.report)
+# R markdown file
+rmd_report = os.path.dirname(os.path.realpath(__file__)) + '/R/metaNanoPype_report.Rmd'
+
+# Perform taxonomic and alpha/beta diversity analyses & build report
+cmd_line = "Rscript " + "-e " + str('"') + "rmarkdown::render('" + rmd_report + "', " + \
+        "params = list(input = '" + str(args.directory) + "', " \
+                "output = '" + str(args.output) + "'), " \
+                        "output_file = '" + str(args.report) + "')" + str('"')
+#print(cmd_line)
+subprocess.call(cmd_line, shell=True)
+
