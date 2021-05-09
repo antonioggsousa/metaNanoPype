@@ -44,6 +44,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r klippy, echo=FALSE}
+if ( ! ("downloadthis" %in% installed.packages()) ) remotes::install_github("fmmattioni/downloadthis")
 if ( ! ("klippy" %in% installed.packages()) ) remotes::install_github("rlesur/klippy")
 klippy::klippy(position = c('top', 'right'))
 ```
