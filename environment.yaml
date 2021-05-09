@@ -21,3 +21,4 @@ dependencies:
 - r-rmarkdown=2.7
 - bioconductor-phyloseq=1.34.0
 - r-dt=0.18
+- r-devtools=2.0.1
