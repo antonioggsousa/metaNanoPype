@@ -247,6 +247,18 @@ The command above will search for all the files with the extension `*.report` un
 
 <br>
 
+<br>
+
+7) As last step, the **metaNanoPype** logs can be grabbed into one report md/html file describing the whole pipeline, main softwares, versions and references used during the pipeline:
+
+        report-py --help # display options
+
+        report-py -d ./ -f ../report/metaNanoPype_report -n "metaNanoPype reproducible report" -a "António Sousa et al."
+
+The command above will grab all the log files, with the extension `*.log` in the current directory (`-d ./`) and build a report named `metaNanoPype_report` into the folder `../report/` (`-f ../report/metaNanoPype_report`). In addition, the title of the report will be `"metaNanoPype reproducible report"` (`-n "metaNanoPype reproducible report"`) and the author name `"António Sousa et al."` (` -a "António Sousa et al."`).
+
+<br>
+
 ---
 
 <br>
