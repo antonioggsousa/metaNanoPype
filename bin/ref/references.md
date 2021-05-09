@@ -23,3 +23,11 @@
 *__If you have used `tax_assign-py` module, please cite:__*
 
 *kraken2*: Wood, Derrick E., Jennifer Lu, and Ben Langmead. "Improved metagenomic analysis with Kraken 2." Genome biology 20.1 (2019): 1-13.
+
+<br>
+
+*__If you have used `tax_div-py` module, please cite:__*
+
+*R programming language*: R Core Team. 2020. "R: A Language and Environment for Statistical Computing." Vienna, Austria: R Foundation for Statistical Computing. [https://www.R-project.org/]([https://www.R-project.org/).
+
+*phyloseq*: McMurdie, P. J., & Holmes, S. (2013). "phyloseq: an R package for reproducible interactive analysis and graphics of microbiome census data." PloS one 8(4): e61217.
