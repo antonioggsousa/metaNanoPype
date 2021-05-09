@@ -235,6 +235,18 @@ Inspect the **kraken2** taxonomic assignments at: `../results/tax`
 
 <br>
 
+<br>
+
+6) Finally run the taxonomic and diversity analyses with [phyloseq](https://joey711.github.io/phyloseq/index.html), in one command-line with the `tax_div-py` **metaNanoPype** script:
+
+        tax_div-py --help # display options
+
+        tax_div-py -d ../results/tax/ -o ../results/div -r ../report/tax_div_report.html
+
+The command above will search for all the files with the extension `*.report` under the directory folder `../results/tax/` (`-d ../results/tax/` option) and save the taxonomic and diversity analyses results into the output folder `../results/div` (`-o ../results/div`). In addition, it is built a html report named `../report/tax_div_report.html` (`-r ../report/tax_div_report.html` - can be open in a browser) with the whole analysis and code run in the `R programming language`, with the `phyloseq` R package. Please open the `tax_div_report.html` report to check the taxonomic and diversity results.
+
+<br>
+
 ---
 
 <br>
