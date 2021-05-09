@@ -14,7 +14,7 @@
 
 *__If you have used `filter_fastq-py` module, please cite:__*
 
-*Porechop*: "Adapter trimmer for Oxford Nanopore reads." [https://github.com/rrwick/Porechop](https://github.com/rrwick/Porechop)
+*Porechop*: "Adapter trimmer for Oxford Nanopore reads." [https://github.com/rrwick/Porechop](https://github.com/rrwick/Porechop).
 
 *Nanofilt*: De Coster, Wouter, et al. "NanoPack: visualizing and processing long-read sequencing data." Bioinformatics 34.15 (2018): 2666-2669.
 
