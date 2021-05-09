@@ -29,9 +29,9 @@
    
    + (IV) polishing/read correction (*not implemented yet*); 
    
-   + (V) taxonomic classification (*under development*); 
+   + (V) taxonomic classification (*implemented*); 
    
-   + (VI) diversity analyses (alpha- and beta-diversity) (*not implemented yet*). 
+   + (VI) diversity analyses (alpha- and beta-diversity) (*implemented*). 
    
 Depending on the step, the module can include more than one option, i.e., tool/algorithm, to allow flexibility to the user. During each step is generated a log file with relevant information to build a report (an additional option) in html format describing the results, versions of software used as well scripts and references of the software.
 
@@ -78,6 +78,10 @@ Then, for each module step it requires several third-party, stand-alone tools in
       + **kraken2** v.2.1.1 (*[installation](https://github.com/DerrickWood/kraken2/wiki/Manual#installation)*) 
       
    + (VI) diversity analyses (alpha- and beta-diversity) (*not implemented yet*). 
+
+      + **R** v.4.0.3 (*[installation](https://www.r-project.org)*) 
+
+      + **phyloseq** v.4.0.3 (*[installation](https://joey711.github.io/phyloseq/index.html)*) 
 
 <br>
 
