@@ -26,6 +26,24 @@ parser.add_argument('-r', action="store", dest="report", type=str, default= "met
 args = parser.parse_args()
 args_dic = {"directory": "-d", "output": "-o", "report": "-r"}
 
+# save log file 
+r_install = subprocess.run(["which", "R"], stdout = subprocess.PIPE)
+r_version = subprocess.run(["R", "--version"], stdout = subprocess.PIPE)
+log_file = open("tax_div-py.log", "a")
+log_file.write("tax_div-py run: " + str(datetime.datetime.now()) + "\n")
+cmd_line = "tax_div-py"
+for arg in vars(args):
+    #if getattr(args, arg) is not None: 
+        #cmd_line = cmd_line + " " + args_dic[arg] + " " + getattr(args, arg)
+    if getattr(args, arg) is not None and type(getattr(args, arg)) is not bool: 
+        cmd_line = cmd_line + " " + str(args_dic[arg]) + " " + str(getattr(args, arg))
+    if getattr(args, arg) is True: 
+        cmd_line = cmd_line + " " + str(args_dic[arg])  
+log_file.write("tax_div-py command-line: " + cmd_line)
+log_file.write("\n\n---\n\n")
+log_file.write(r_version.stdout.decode().split("\n")[0] + "\n")
+log_file.write("R installed: " + r_install.stdout.decode())
+
 # get absolute file paths if not provided
 if os.path.isabs(args.directory) is not True: 
         args.directory = os.path.abspath(args.directory)
